@@ -26,7 +26,7 @@ class Counter extends Component
     public $ptk_id;
     public function render()
     {
-        return view('livewire.counter')->title('Presensi Yayasan Ariya Metta');
+        return view('livewire.counter')->title('Presensi Yayasan Ariya Metta')->layout('components.layouts.scan');
     }
     public function updatedFormId()
     {
@@ -96,7 +96,7 @@ class Counter extends Component
         }
         */
         $pusher = $this->pusher();
-        $pusher->trigger('aksi-scan', 'App\\Events\\Notify', $data);
+        $pusher->trigger('aksi-scan', 'App\\Events\\StatusLiked', $data);
     }
     public function notif_masuk_guru($absen)
     {
@@ -130,7 +130,7 @@ class Counter extends Component
         return Carbon::now();
     }
     public function toastr($type, $title, $message, $mp3){
-        //$this->notif_pusher($type, $title, $message, $mp3);
+        $this->notif_pusher($type, $title, $message, $mp3);
         $this->dispatch('toastr', ['type' => $type,  'title' => $title, 'message' => $message, 'mp3' => $mp3]);
     }
     private function proses_absen_pd(){

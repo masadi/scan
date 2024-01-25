@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Counter;
+use App\Livewire\Display;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,4 +18,5 @@ use App\Livewire\Counter;
     return view('welcome');
 });*/
 Route::get('/', Counter::class);
+Route::get('/monitoring', Display::class);
 
