@@ -1,6 +1,6 @@
 <div>
     <div class="flex-fill mb-2">
-        <input class="form-control form-control-lg" type="text" wire:model.live="form_id" id="form_id" placeholder="ID Peserta Didik/ID PTK">
+        <input class="form-control form-control-lg" type="text" wire:model.live="form_id" id="form_id" placeholder="ID Peserta Didik/ID PTK" @if($isDisabled) disabled @endif>
     </div>
     <div class="scan">
         <div class="qrcode"></div>

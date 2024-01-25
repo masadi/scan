@@ -16,9 +16,11 @@ use App\Models\Izin;
 use App\Models\Libur;
 use Carbon\Carbon;
 use Pusher\Pusher;
+use App\Events\StatusLiked;
 
 class Counter extends Component
 {
+    public $isDisabled = 0;
     public $form_id = '';
     public $peserta_didik_id;
     public $ptk_id;
@@ -28,6 +30,7 @@ class Counter extends Component
     }
     public function updatedFormId()
     {
+        $this->isDisabled = 1;
         $id = Str::isUuid($this->form_id);
         if($id){
             $peserta_didik = Peserta_didik::find($this->form_id);
@@ -55,7 +58,7 @@ class Counter extends Component
         } else {
             $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
         }
-        $this->reset(['form_id']);
+        $this->reset(['form_id', 'isDisabled']);
     }
     public function check_libur($sekolah_id){
         $libur = Libur::where(function($query) use ($sekolah_id){
@@ -109,6 +112,7 @@ class Counter extends Component
     }
     public function notif_masuk_siswa($absen)
     {
+        broadcast(new StatusLiked($absen))->toOthers();
         $pusher = $this->pusher();
         $pusher->trigger('siswa-masuk', 'App\\Events\\Notify', $absen);
  
