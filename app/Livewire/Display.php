@@ -29,7 +29,9 @@ class Display extends Component
         }])->where(function($query){
             $query->whereDate('created_at', Carbon::today());
             $query->has('peserta_didik');
-        })->has('absen_masuk')->orderBy('created_at', 'DESC')->limit(10)->get();
+        })->whereHas('absen_masuk', function($query){
+            $query->where('terlambat', 0);
+        })->orderBy('created_at', 'DESC')->limit(10)->get();
         $siswa_terlambat = Absen::with(['peserta_didik' => function($query){
             $query->with(['kelas' => function($query){
                 $query->where('anggota_rombel.semester_id', $this->getSemester()->semester_id);
