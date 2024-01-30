@@ -90,11 +90,6 @@ class Counter extends Component
     }
     public function notif_pusher($type, $title, $message, $mp3){
         $data = ['type' => $type,  'title' => $title, 'message' => $message, 'mp3' => $mp3];
-        /*
-            public function toastr($type, $title, $message, $mp3){
-            $this->dispatchBrowserEvent('toastr', ['type' => $type,  'title' => $title, 'message' => $message, 'mp3' => $mp3]);
-        }
-        */
         $pusher = $this->pusher();
         $pusher->trigger('aksi-scan', 'App\\Events\\StatusLiked', $data);
     }
@@ -112,15 +107,18 @@ class Counter extends Component
     }
     public function notif_masuk_siswa($absen)
     {
-        broadcast(new StatusLiked($absen))->toOthers();
         $pusher = $this->pusher();
-        $pusher->trigger('siswa-masuk', 'App\\Events\\Notify', $absen);
+        $pusher->trigger('siswa-masuk', 'App\\Events\\UpdateList', $absen);
+        //$this->dispatch('siswa-masuk', absen: $absen);
+        //broadcast(new StatusLiked($absen))->toOthers();
+        //$pusher = $this->pusher();
+        //$pusher->trigger('siswa-masuk', 'App\\Events\\Notify', $absen);
  
     }
     public function notif_pulang_siswa($absen)
     {
         $pusher = $this->pusher();
-        $pusher->trigger('siswa-pulang', 'App\\Events\\Notify', $absen);
+        $pusher->trigger('siswa-pulang', 'App\\Events\\UpdateList', $absen);
  
     }
     private function getSemester(){
@@ -176,8 +174,10 @@ class Counter extends Component
                                 ]
                             );
                             $this->toastr('success', 'Absen Masuk hari ini berhasil disimpan', 'Selamat Datang '.$jam_pd->pd->nama, 'Ding.mp3');
-                            $absen->peserta_didik = $jam_pd->pd;
-                            $this->notif_masuk_siswa($absen);
+                            //$absen->peserta_didik = $jam_pd->pd;
+                            $data['absen'] = $absen;
+                            $data['absen']['peserta_didik'] = $jam_pd->pd;
+                            $this->notif_masuk_siswa($data);
                         }
                     } elseif(check_scan_pulang_start($jam_pd->jam->scan_pulang_start)){
                         if(check_scan_pulang_end($jam_pd->jam->scan_pulang_end)){
@@ -224,8 +224,11 @@ class Counter extends Component
                     ]
                 );
                 $this->toastr('success', 'Absen Pulang berhasil disimpan', $jam_pd->pd->nama. ' telah scan pulang', 'Ding.mp3');
-                $absen->peserta_didik = $jam_pd->pd;
-                $this->notif_pulang_siswa($absen);
+                //$absen->peserta_didik = $jam_pd->pd;
+                //$this->notif_pulang_siswa($absen);
+                $data['absen'] = $absen;
+                $data['absen']['peserta_didik'] = $jam_pd->pd;
+                $this->notif_pulang_siswa($data);
             }
         } else {
             $this->toastr('error', 'Absen Gagal', $jam_pd->pd->nama.' hari ini belum absen masuk', 'Dong.mp3');

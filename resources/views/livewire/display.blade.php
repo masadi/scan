@@ -19,7 +19,7 @@
                             <tbody>
                                 @forelse ($collection_siswa_masuk as $item_masuk)
                                     <tr @if($loop->iteration == 1) class="table-success" @endif>
-                                        <td>{{$loop->iteration}}</td>
+                                        <td class="text-center">{{$loop->iteration}}</td>
                                         <td>{{$item_masuk['peserta_didik']['nama']}}</td>
                                         <td>{{($item_masuk['peserta_didik']['kelas']) ? $item_masuk['peserta_didik']['kelas']['nama'] : '-'}}</td>
                                         <td class="text-center">{{$item_masuk->created_at->format('H:i:s')}}</td>
@@ -53,6 +53,7 @@
                             <tbody>
                                 @forelse ($collection_siswa_terlambat as $terlambat)
                                 <tr>
+                                  <tr @if($loop->iteration == 1) class="table-danger" @endif>
                                     <td class="text-center">{{$loop->iteration}}</td>
                                     <td>{{$terlambat->peserta_didik->nama}}</td>
                                     <td class="text-center">{{($terlambat->peserta_didik->kelas) ? $terlambat->peserta_didik->kelas->nama : '-'}}</td>
@@ -88,7 +89,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($collection_tidak_scan_masuk as $tidak_scan)
-                                    <tr @if($loop->iteration == 1) class="table-success" @endif>
+                                    <tr @if($loop->iteration == 1) class="table-warning" @endif>
                                         <td class="text-center">{{$loop->iteration}}</td>
                                         <td>{{$tidak_scan->peserta_didik->nama}}</td>
                                         <td>{{($tidak_scan->peserta_didik->kelas) ? $tidak_scan->peserta_didik->kelas->nama : '-'}}</td>
@@ -128,7 +129,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($collection_pulang_cepat as $pulang_cepat)
-                                <tr>
+                                <tr @if($loop->iteration == 1) class="table-danger" @endif>
                                     <td class="text-center">{{$loop->iteration}}</td>
                                     <td>{{$pulang_cepat->peserta_didik->nama}}</td>
                                     <td>{{($pulang_cepat->peserta_didik->kelas) ? $pulang_cepat->peserta_didik->kelas->nama : '-'}}</td>
@@ -280,16 +281,21 @@
 @endpush
 @script
 <script>
-    console.log('asd');
     Pusher.logToConsole = true;
 
     var pusher = new Pusher('bc531acdb4578535bf7a', {
       cluster: 'ap1'
     });
+    var siswa_masuk = pusher.subscribe('siswa-masuk');
+    siswa_masuk.bind('App\\Events\\UpdateList', function(data) {
+      $wire.dispatch('siswa-masuk', { absen: data });
+    });
+    var siswa_pulang = pusher.subscribe('siswa-pulang');
+    siswa_pulang.bind('App\\Events\\UpdateList', function(data) {
+      $wire.dispatch('siswa-pulang', { absen: data });
+    });
     var aksi_scan = pusher.subscribe('aksi-scan');
     aksi_scan.bind('App\\Events\\StatusLiked', function(data) {
-      console.log('aksi-scan');
-      console.log(data);
       toastr[data.type](data.message, data.title, {
             "closeButton": false,
             "debug": false,
