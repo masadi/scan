@@ -24,6 +24,7 @@ class Counter extends Component
     public $form_id = '';
     public $peserta_didik_id;
     public $ptk_id;
+    public $semester_id = '20232';
     public function render()
     {
         return view('livewire.counter')->title('Presensi Yayasan Ariya Metta')->layout('components.layouts.scan');
@@ -138,14 +139,14 @@ class Counter extends Component
                     $query->where('izin.created_at', Carbon::now()->format('Y-m-d'));
                 },
                 'kelas' => function($query){
-                    $query->where('anggota_rombel.semester_id', $this->getSemester()->semester_id);
+                    $query->where('anggota_rombel.semester_id', $this->semester_id);
                 }
             ]);
         }])->where(function($query){
             $query->where('peserta_didik_id', $this->peserta_didik_id);
             $query->whereHas('jam', function($query){
                 $query->whereHas('semester', function($query){
-                    $query->where('semester_id', $this->getSemester()->semester_id);
+                    $query->where('semester_id', $this->semester_id);
                     $query->where('tanggal_mulai', '<=', Carbon::now()->format('Y-m-d'));
                     $query->where('tanggal_selesai', '>=', Carbon::now()->format('Y-m-d'));
                 });
@@ -158,7 +159,7 @@ class Counter extends Component
             if(!$jam_pd->pd->izin_harian){
                 if(check_scan_masuk_start($jam_pd->jam->scan_masuk_start)){
                     if(check_scan_masuk_end($jam_pd->jam->scan_masuk_end)){
-                        $absen = insert_absen($this->peserta_didik_id, $this->getSemester()->semester_id);
+                        $absen = insert_absen($this->peserta_didik_id, $this->semester_id);
                         $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
                         if($absen_masuk){
                             $this->toastr('error', 'Absen Gagal', 'Absen masuk '.$jam_pd->pd->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
@@ -204,7 +205,7 @@ class Counter extends Component
         $this->reset(['peserta_didik_id']);
     }
     private function proses_absen_pulang_pd($jam_pd){
-        $absen = insert_absen($this->peserta_didik_id, $this->getSemester()->semester_id);
+        $absen = insert_absen($this->peserta_didik_id, $this->semester_id);
         $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
         if($absen_masuk){
             $absen_pulang = Absen_pulang::where('absen_id', $absen->id)->first();
@@ -235,7 +236,7 @@ class Counter extends Component
         }
     }
     private function proses_absen_pulang_ptk($jam_ptk){
-        $absen = insert_absen_ptk($this->ptk_id, $this->getSemester()->semester_id);
+        $absen = insert_absen_ptk($this->ptk_id, $this->semester_id);
         $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
         if($absen_masuk){
             $absen_pulang = Absen_pulang::where('absen_id', $absen->id)->first();
@@ -270,7 +271,7 @@ class Counter extends Component
             $query->where('ptk_id', $this->ptk_id);
             $query->whereHas('jam', function($query){
                 $query->whereHas('semester', function($query){
-                    $query->where('semester_id', $this->getSemester()->semester_id);
+                    $query->where('semester_id', $this->semester_id);
                     $query->where('tanggal_mulai', '<=', Carbon::now()->format('Y-m-d'));
                     $query->where('tanggal_selesai', '>=', Carbon::now()->format('Y-m-d'));
                 });
@@ -292,7 +293,7 @@ class Counter extends Component
             } else {
                 if(check_scan_masuk_start($jam_ptk->jam->scan_masuk_start)){
                     if(check_scan_masuk_end($jam_ptk->jam->scan_masuk_end)){
-                        $absen = insert_absen_ptk($this->ptk_id, $this->getSemester()->semester_id);
+                        $absen = insert_absen_ptk($this->ptk_id, $this->semester_id);
                         $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
                         if($absen_masuk){
                             $this->toastr('error', 'Absen Gagal', 'Absen masuk '.$jam_ptk->ptk->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
