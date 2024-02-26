@@ -34,6 +34,138 @@ class Counter extends Component
         $this->isDisabled = 1;
         $id = Str::isUuid($this->form_id);
         if($id){
+            $jam_masuk_start = '05:00:00';
+            $jam_masuk_end = '09:00:00';
+            $jam_pulang_start = '09:00:01';
+            $jam_pulang_end = '21:00:00';
+            /*
+            $jam_masuk_start = '23:00:00';
+            $jam_masuk_end = '23:35:00';
+            $jam_pulang_start = '23:35:01';
+            $jam_pulang_end = '23:59:00';
+            */
+            $jam_sekarang = Carbon::now()->format('H:i:s');
+            $peserta_didik = Peserta_didik::find($this->form_id);
+            if($jam_sekarang >= $jam_masuk_start && $jam_sekarang <= $jam_masuk_end){
+                if($peserta_didik){
+                    $absen = insert_absen($peserta_didik->peserta_didik_id, $this->semester_id);
+                    $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
+                    if($absen_masuk){
+                        $this->toastr('error', 'Absen Gagal', 'Absen masuk '.$peserta_didik->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
+                    } else {
+                        $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));//$jam_pd->jam->waktu_akhir_masuk);
+                        $to = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                        Absen_masuk::updateOrCreate(
+                            [
+                                'absen_id' => $absen->id,
+                            ],
+                            [
+                                'terlambat' => (Str::contains($from->diffInMinutes($to, false), '-')) ? 0 : $from->diffInMinutes($to, false),
+                            ]
+                        );
+                        $this->toastr('success', 'Absen Masuk hari ini berhasil disimpan', 'Selamat Datang '.$peserta_didik->nama, 'Ding.mp3');
+                        $data['absen'] = $absen;
+                        $data['absen']['peserta_didik'] = $peserta_didik;
+                        $this->notif_masuk_siswa($data);
+                    }
+                } else {
+                    $ptk = Ptk::find($this->form_id);
+                    if($ptk){
+                        $absen = insert_absen_ptk($ptk->ptk_id, $this->semester_id);
+                        $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
+                        if($absen_masuk){
+                            $this->toastr('error', 'Absen Gagal', 'Absen masuk '.$ptk->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
+                        } else {
+                            $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                            $to = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                            Absen_masuk::updateOrCreate(
+                                [
+                                    'absen_id' => $absen->id,
+                                ],
+                                [
+                                    'terlambat' => (Str::contains($from->diffInMinutes($to, false), '-')) ? 0 : $from->diffInMinutes($to, false),
+                                ]
+                            );
+                            $this->toastr('success', 'Absen Masuk hari ini berhasil disimpan', 'Selamat Datang '.$ptk->nama, 'Ding.mp3');
+                            $absen->ptk = $ptk;
+                            $this->notif_masuk_guru($absen);
+                        }
+                    } else {
+                        $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
+                    }
+                }
+            } elseif($jam_sekarang >= $jam_pulang_start && $jam_sekarang <= $jam_pulang_end){
+                if($peserta_didik){
+                    $absen = insert_absen($peserta_didik->peserta_didik_id, $this->semester_id);
+                    $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
+                    if($absen_masuk){
+                        $absen_pulang = Absen_pulang::where('absen_id', $absen->id)->first();
+                        if($absen_pulang){
+                            $this->toastr('error', 'Absen Gagal', 'Absen pulang '.$peserta_didik->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
+                        } else {
+                            $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                            $to = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                            Absen_pulang::updateOrCreate(
+                                [
+                                    'absen_id' => $absen->id,
+                                ],
+                                [
+                                    'pulang_cepat' => (Str::contains($to->diffInMinutes($from, false), '-')) ? $to->diffInMinutes($from) : 0,
+                                ]
+                            );
+                            $this->toastr('success', 'Absen Pulang berhasil disimpan', $peserta_didik->nama. ' telah scan pulang', 'Ding.mp3');
+                            $data['absen'] = $absen;
+                            $data['absen']['peserta_didik'] = $peserta_didik->pd;
+                            $this->notif_pulang_siswa($data);
+                        }
+                    } else {
+                        $this->toastr('error', 'Absen Gagal', $peserta_didik->nama.' hari ini belum absen masuk', 'Dong.mp3');
+                    }
+                } else {
+                    $ptk = Ptk::find($this->form_id);
+                    if($ptk){
+                        $absen = insert_absen_ptk($ptk->ptk_id, $this->semester_id);
+                        $absen_masuk = Absen_masuk::where('absen_id', $absen->id)->first();
+                        if($absen_masuk){
+                            $absen_pulang = Absen_pulang::where('absen_id', $absen->id)->first();
+                            if($absen_pulang){
+                                $this->toastr('error', 'Absen Gagal', 'Absen pulang '.$ptk->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
+                            } else {
+                                $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                                $to = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
+                                $absen_pulang = Absen_pulang::updateOrCreate(
+                                    [
+                                        'absen_id' => $absen->id,
+                                    ],
+                                    [
+                                        'pulang_cepat' => (Str::contains($to->diffInMinutes($from, false), '-')) ? $to->diffInMinutes($from) : 0,
+                                    ]
+                                );
+                                $this->toastr('success', 'Absen Pulang '.$ptk->nama.' berhasil disimpan', 'Terima kasih', 'Ding.mp3');
+                                $absen->absen_pulang = $absen_pulang;
+                                $absen->ptk = $ptk;
+                                $this->notif_pulang_guru($absen);
+                            }           
+                        } else {
+                            $this->toastr('error', 'Absen Gagal', $ptk->nama.' hari ini belum absen masuk', 'Dong.mp3');
+                        }
+                    } else {
+                        $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
+                    }
+                }
+            } else {
+                $this->toastr('error', 'Absen Gagal', 'Jam scan tidak ditemukan!', 'Dong.mp3');
+            }
+        } else {
+            $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
+        }
+        $this->reset(['form_id', 'isDisabled']);
+    }
+    public function updatedFormIdOld()
+    {
+        $this->isDisabled = 1;
+        $id = Str::isUuid($this->form_id);
+        if($id){
             $peserta_didik = Peserta_didik::find($this->form_id);
             if($peserta_didik){
                 if($this->check_libur($peserta_didik->sekolah_id)){
@@ -55,7 +187,6 @@ class Counter extends Component
                     $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
                 }
             }
-            
         } else {
             $this->toastr('error', 'Absen Gagal', 'Data Peserta Didik/PTK tidak ditemukan!', 'Dong.mp3');
         }
