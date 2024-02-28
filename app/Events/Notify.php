@@ -10,30 +10,27 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class StatusLiked
+class Notify
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
+     *
+     * @return void
      */
-    public $message;
-    public function __construct($message)
+    public function __construct()
     {
-        $this->message = $message;
+        //
     }
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return \Illuminate\Broadcasting\Channel|array
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return new Channel('status_liked');
-        //return ['status-liked'];
-        return [
-            new PrivateChannel('status-liked'),
-        ];
+        return new PrivateChannel('channel-name');
     }
 }

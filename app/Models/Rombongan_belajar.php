@@ -31,10 +31,6 @@ class Rombongan_belajar extends Model
     {
         return $this->hasOne(Sekolah::class, 'sekolah_id', 'sekolah_id');
     }
-    public function semester()
-    {
-        return $this->hasOne(Semester::class, 'semester_id', 'semester_id');
-    }
     public function pd(){
         return $this->hasManyThrough(
             Peserta_didik::class,
@@ -44,13 +40,5 @@ class Rombongan_belajar extends Model
             'rombongan_belajar_id', // Local key on the mechanics table...
             'peserta_didik_id' // Local key on the cars table...
         );
-    }
-    public function jadwal_ujian()
-    {
-        return $this->hasMany(Jadwal_ujian::class, 'rombongan_belajar_id', 'rombongan_belajar_id');
-    }
-    public function catatan_ujian()
-    {
-        return $this->hasMany(Catatan_ujian::class, 'rombongan_belajar_id', 'rombongan_belajar_id');
     }
 }

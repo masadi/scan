@@ -11,7 +11,6 @@ class Absen extends Model
     use HasFactory;
     protected $table = 'absen';
 	protected $guarded = [];
-	public $appends = ['jam_masuk'];
 	public function absen_masuk(){
 		return $this->hasOne(Absen_masuk::class, 'absen_id', 'id');
 	}
@@ -33,10 +32,5 @@ class Absen extends Model
 	public function getUpdatedAtAttribute()
     {
         return Carbon::createFromFormat('Y-m-d H:i:s', $this->attributes['updated_at'])->format('d/m/Y H:i:s');
-    }
-	public function getJamMasukAttribute()
-    {
-		return Carbon::createFromFormat('Y-m-d H:i:s', $this->attributes['updated_at'])->format('H:i:s');
-        return Carbon::createFromFormat('Y-m-d H:i:s', $this->attributes['created_at'])->format('d/m/Y H:i:s');
     }
 }

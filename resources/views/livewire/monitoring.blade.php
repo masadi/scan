@@ -279,7 +279,7 @@
 }
 </style>
 @endpush
-@script
+@push('scripts')
 <script>
     Pusher.logToConsole = true;
 
@@ -287,15 +287,17 @@
       cluster: 'ap1'
     });
     var siswa_masuk = pusher.subscribe('siswa-masuk');
-    siswa_masuk.bind('App\\Events\\UpdateList', function(data) {
-      $wire.dispatch('siswa-masuk', { absen: data });
+    siswa_masuk.bind('App\\Events\\Notify', function(data) {
+      //$wire.dispatch('siswa-masuk', { absen: data });
+      Livewire.emit('scanMasukSiswa', data)
     });
     var siswa_pulang = pusher.subscribe('siswa-pulang');
-    siswa_pulang.bind('App\\Events\\UpdateList', function(data) {
-      $wire.dispatch('siswa-pulang', { absen: data });
+    siswa_pulang.bind('App\\Events\\Notify', function(data) {
+      //$wire.dispatch('siswa-pulang', { absen: data });
+      Livewire.emit('scanPulangSiswa', data)
     });
     var aksi_scan = pusher.subscribe('aksi-scan');
-    aksi_scan.bind('App\\Events\\StatusLiked', function(data) {
+    aksi_scan.bind('App\\Events\\Notify', function(data) {
       toastr[data.type](data.message, data.title, {
             "closeButton": false,
             "debug": false,
@@ -317,4 +319,4 @@
         new Audio("{{url('mp3')}}/"+data.mp3).play();
     });
 </script>
-@endscript
+@endpush
