@@ -126,7 +126,8 @@ class Scanning extends Component
             if($absen_pulang){
                 $this->toastr('error', 'Absen Gagal', 'Absen pulang '.$jam_pd->pd->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
             } else {
-                $from = $this->jam_sekarang()->format('H:i:s');
+                //$from = $this->jam_sekarang()->format('H:i:s');
+                $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
                 $to = Carbon::createFromFormat('H:i:s', $jam_pd->jam->scan_pulang_start);
                 Absen_pulang::updateOrCreate(
                     [
@@ -152,7 +153,8 @@ class Scanning extends Component
             if($absen_pulang){
                 $this->toastr('error', 'Absen Gagal', 'Absen pulang '.$jam_ptk->ptk->nama.' untuk hari ini sudah terekam', 'Dong.mp3');
             } else {
-                $from = $this->jam_sekarang()->format('H:i:s');
+                //$from = $this->jam_sekarang()->format('H:i:s');
+                $from = Carbon::createFromFormat('H:i:s', $this->jam_sekarang()->format('H:i:s'));
                 $to = Carbon::createFromFormat('H:i:s', $jam_ptk->jam->scan_pulang_start);
                 $absen_pulang = Absen_pulang::updateOrCreate(
                     [
